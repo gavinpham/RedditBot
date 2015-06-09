@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#! /usr/bin/python
 import praw
 import pdb
 import re
@@ -31,7 +31,7 @@ else:
         comments_replied_to = filter(None, comments_replied_to)
 
 # Get the top 5 values from our subreddit
-subreddit = r.get_subreddit('pythonforengineers')
+subreddit = r.get_subreddit('smu')
 for submission in subreddit.get_hot(limit=5):
     #get comments into an unordered list
     flat_comments = praw.helpers.flatten_tree(submission.comments)
@@ -40,7 +40,7 @@ for submission in subreddit.get_hot(limit=5):
         #If we did not already reply to the comment
         if comment.id not in comments_replied_to:
             #Make sure we aren't replying to ourself
-            if comment.author is not 'PonyUpBot':
+            if str(comment.author) != str(REDDIT_USERNAME):
                 #Check if the comment matches our regex
                 if re.search("fuck tcu", comment.body, re.IGNORECASE):
                     #Yeah! We matched!
