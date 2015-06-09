@@ -12,42 +12,45 @@ if not os.path.isfile("config_bot.py"):
     exit(1)
 
 # Create the Reddit instance
-user_agent = ("PyFor Eng bot 0.1")
+user_agent = ("PyFor Eng bot 0.12345")
 r = praw.Reddit(user_agent=user_agent)
 
 # and login
 r.login(REDDIT_USERNAME, REDDIT_PASS)
 
 # Have we run this code before? If not, create an empty list
-if not os.path.isfile("posts_replied_to.txt"):
-    posts_replied_to = []
+if not os.path.isfile("comments_replied_to.txt"):
+    comments_replied_to = []
 
-# If we have run the code before, load the list of posts we have replied to
+# If we have run the code before, load the list of comments we have replied to
 else:
     # Read the file into a list and remove any empty values
-    with open("posts_replied_to.txt", "r") as f:
-        posts_replied_to = f.read()
-        posts_replied_to = posts_replied_to.split("\n")
-        posts_replied_to = filter(None, posts_replied_to)
+    with open("comments_replied_to.txt", "r") as f:
+        comments_replied_to = f.read()
+        comments_replied_to = comments_replied_to.split("\n")
+        comments_replied_to = filter(None, comments_replied_to)
 
 # Get the top 5 values from our subreddit
 subreddit = r.get_subreddit('pythonforengineers')
 for submission in subreddit.get_hot(limit=5):
-    # print submission.title
-
-    # If we haven't replied to this post before
-    if submission.id not in posts_replied_to:
-
-        # Do a case insensitive search
-        if re.search("i love python", submission.title, re.IGNORECASE):
-            # Reply to the post
-            submission.add_comment("Nigerian scammer bot says: It's all about the Bass (and Python)")
-            print "Bot replying to : ", submission.title
-
-            # Store the current id into our list
-            posts_replied_to.append(submission.id)
+    #get comments into an unordered list
+    flat_comments = praw.helpers.flatten_tree(submission.comments)
+    #Parse through comments to the current submission
+    for comment in flat_comments:
+        #If we did not already reply to the comment
+        if comment.id not in comments_replied_to:
+            #Make sure we aren't replying to ourself
+            if comment.author is not 'PonyUpBot':
+                #Check if the comment matches our regex
+                if re.search("fuck tcu", comment.body, re.IGNORECASE):
+                    #Yeah! We matched!
+                    comment.reply('Yeah! Fuck TCU!')
+                    comment.upvote()
+                    #This comment has now been replied to
+                    comments_replied_to.append(comment.id)
+                    print "Bot replying to: ", comment.body
 
 # Write our updated list back to the file
-with open("posts_replied_to.txt", "w") as f:
-    for post_id in posts_replied_to:
-        f.write(post_id + "\n")
+with open("comments_replied_to.txt", "w") as f:
+    for comment_id in comments_replied_to:
+        f.write(comment_id + "\n")
